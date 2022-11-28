@@ -2,12 +2,14 @@ from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
+
 # url = 'http://127.0.0.1:5000/'
 
 # Стартовая страница, с приветствием, полезной информацией. Данные не вводятся. Есть переадресация на Login и Register
 @app.route("/", methods=['GET'])
 def index():
     return 'вывод стартовой страницы'
+
 
 # страница с регистрацией, из нее переход на страницу Login или стартовую (отмена регистрации). Есть ввод данных
 @app.route("/Register", methods=['GET', 'POST'])
@@ -39,14 +41,47 @@ def User_page():
     return 'вывод страницы авторизировавшегося пользователя, с разного рода статистикой  \ историей взаимодействия'
 
 
-# страница с формой запроса для получения параметров. Как я предполагаю, вывод результатов можно реализовать динамически
-# на этой же странице, или сделать еще одну, например /Currency/rezult. Данные вводятся. Есть переход на Logout и User_page
+# страница с формой запроса для получения параметров.
 @app.route("/Currency", methods=['GET', 'POST'])
 def Currency():
+
+    currency_bd_tmp = [
+        {'bank': 'NBU', 'date': '2022-11-25', 'currency': 'UAH', 'buy_value': 0.025, 'sell_value': 0.022},
+        {'bank': 'NBU', 'date': '2022-11-25', 'currency': 'EUR', 'buy_value': 0.9, 'sell_value': 0.9},
+        {'bank': 'NBU', 'date': '2022-11-25', 'currency': 'USD', 'buy_value': 1, 'sell_value': 1},
+        {'bank': 'NBU', 'date': '2022-11-25', 'currency': 'GPB', 'buy_value': 1.1, 'sell_value': 1.2},
+
+        {'bank': 'Privatbank', 'date': '2022-11-25', 'currency': 'UAH', 'buy_value': 0.026, 'sell_value': 0.023},
+        {'bank': 'Privatbank', 'date': '2022-11-25', 'currency': 'EUR', 'buy_value': 0.91, 'sell_value': 0.96},
+        {'bank': 'Privatbank', 'date': '2022-11-25', 'currency': 'USD', 'buy_value': 1, 'sell_value': 1},
+        {'bank': 'Privatbank', 'date': '2022-11-25', 'currency': 'GPB', 'buy_value': 1.11, 'sell_value': 1.21},
+
+        {'bank': 'Monobank', 'date': '2022-11-25', 'currency': 'UAH', 'buy_value': 0.027, 'sell_value': 0.024},
+        {'bank': 'Monobank', 'date': '2022-11-25', 'currency': 'EUR', 'buy_value': 0.92, 'sell_value': 0.97},
+        {'bank': 'Monobank', 'date': '2022-11-25', 'currency': 'USD', 'buy_value': 1, 'sell_value': 1},
+        {'bank': 'Monobank', 'date': '2022-11-25', 'currency': 'GPB', 'buy_value': 1.12, 'sell_value': 1.22},
+    ]
     if request.method == 'GET':
-        return render_template ('currency.html')
+        return render_template('currency.html')
     else:
-        return 'отправка параметров для обработки'
+        bank_from_form = request.form['bank']
+        curr_base_from_form = request.form['currency_1']
+        curr_conv_from_form = request.form['currency_2']
+        date_from_form = request.form['date']
+        buy_base_curr = buy_conv_curr = sell_conv_curr = sell_base_curr = 0
+        for line in currency_bd_tmp:
+            if line['bank'] == bank_from_form and line['currency'] == curr_base_from_form \
+                    and line['date'] == date_from_form :
+                buy_base_curr = line['buy_value']
+                sell_base_curr = line['sell_value']
+            if line['bank'] == bank_from_form and line['currency'] == curr_conv_from_form \
+                    and line['date'] == date_from_form:
+                buy_conv_curr = line['buy_value']
+                sell_conv_curr = line['sell_value']
+        buy_exchange = buy_conv_curr / buy_base_curr
+        sell_exchange = sell_conv_curr / sell_base_curr
+        rez = [buy_exchange, sell_exchange]
+        return rez
 
 
 if __name__ == '__main__':

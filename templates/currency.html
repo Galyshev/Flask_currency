@@ -5,36 +5,37 @@
     <title>Конвертер валюты</title>
 </head>
 <body>
-<p><b>Выберите банк</b></p>
-<form>
-    <input type="radio" id="NBU" name="bank" value="NBU" checked>
-    <label for="NBU">NBU</label><br>
-    <input type="radio" id="Privatbank" name="bank" value="Privatbank">
-    <label for="Privatbank">Privatbank</label><br>
-    <input type="radio" id="Monobank" name="bank" value="Monobank">
-    <label for="Monobank">Monobank</label>
-</form>
+    <form action="/Currency" method="post">
+        <p><b>Выберите банк</b></p>
+        <input type="radio" id="NBU" name="bank" value="NBU" checked>
+        <label for="NBU">NBU</label><br>
+        <input type="radio" id="Privatbank" name="bank" value="Privatbank">
+        <label for="Privatbank">Privatbank</label><br>
+        <input type="radio" id="Monobank" name="bank" value="Monobank">
+        <label for="Monobank">Monobank</label>
 
-<p><b>Базовая валюта</b></p>
-<select name="currencuy1">
-    <option value="UAH" selected>UAH</option>
-    <option value="EUR">EUR</option>
-    <option value="USD">USD</option>
-    <option value="GPB">GPB</option>
-</select>
+        <p><b>Базовая валюта</b></p>
+        <select name="currency_1">
+            <option value="UAH" selected>UAH</option>
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+            <option value="GPB">GPB</option>
+        </select>
 
-<p><b>Конвертируемая валюта</b></p>
-<select name="currency_2">
-    <option value="UAH">UAH</option>
-    <option value="EUR" selected>EUR</option>
-    <option value="USD">USD</option>
-    <option value="GPB">GPB</option>
-</select>
+        <p><b>Конвертируемая валюта</b></p>
+        <select name="currency_2">
+            <option value="UAH">UAH</option>
+            <option value="EUR" selected>EUR</option>
+            <option value="USD">USD</option>
+            <option value="GPB">GPB</option>
+        </select>
 
-<p><b>Выберите дату</b></p>
-<label for="date"></label>
+        <p><b>Выберите дату</b></p>
+        <label for="date"></label>
+        <input type="date" id="date" name="date"
+               value="2022-11-25" min="2022-01-01" max="2022-12-31">
 
-<input type="date" id="date" name="trip-start"
-       value="2022-11-25" min="2022-01-01" max="2022-12-31">
+        <p><input type="submit" value="Submit"> </p>
+    </form>
 </body>
 </html>
