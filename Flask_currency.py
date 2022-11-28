@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
@@ -44,7 +44,7 @@ def User_page():
 @app.route("/Currency", methods=['GET', 'POST'])
 def Currency():
     if request.method == 'GET':
-        return 'вывод формы с полями для параметров запроса'
+        return render_template ('currency.html')
     else:
         return 'отправка параметров для обработки'
 
