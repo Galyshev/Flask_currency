@@ -81,7 +81,11 @@ def Currency():
         buy_exchange = buy_conv_curr / buy_base_curr
         sell_exchange = sell_conv_curr / sell_base_curr
         rez = [buy_exchange, sell_exchange]
-        return rez
+        return render_template('currency.html', bank_from_form=bank_from_form,
+                                                curr_base_from_form=curr_base_from_form,
+                                                buy_exchange=buy_exchange,
+                                                sell_exchange=sell_exchange,
+                                                curr_conv_from_form=curr_conv_from_form)
 
 
 if __name__ == '__main__':

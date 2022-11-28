@@ -36,6 +36,17 @@
                value="2022-11-25" min="2022-01-01" max="2022-12-31">
 
         <p><input type="submit" value="Submit"> </p>
+
     </form>
+
+    <p>{% if buy_exchange %}
+        <h1>Курс для банка {{ bank_from_form }}</h1>
+        <p>За 1 {{ curr_conv_from_form }} </p>
+        <p>Продажа {{ buy_exchange }} {{ curr_base_from_form }}</p>
+        <p>Покупка {{ sell_exchange }} {{ curr_base_from_form }}</p>
+
+        {% endif %}
+    </p>
+
 </body>
 </html>
