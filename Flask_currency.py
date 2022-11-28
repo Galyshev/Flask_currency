@@ -44,6 +44,12 @@ def User_page():
 # страница с формой запроса для получения параметров.
 @app.route("/Currency", methods=['GET', 'POST'])
 def Currency():
+    '''
+    задача со звездочкой реализована, так, как мне хватило знаний и смекалки. Изменил принцип вывода банков,
+    так же поменял вывод кода валют, относительно того, что делали на уроке.
+    Возможно, я перепутал местами понятие "базовая валюта" и "конвертируемая валюта", однако это не влияет на
+    функционал, только на визуальную часть, которую не сложно изменить
+    '''
 
     currency_bd_tmp = [
         {'bank': 'NBU', 'date': '2022-11-25', 'currency': 'UAH', 'buy_value': 0.025, 'sell_value': 0.022},
@@ -61,31 +67,50 @@ def Currency():
         {'bank': 'Monobank', 'date': '2022-11-25', 'currency': 'USD', 'buy_value': 1, 'sell_value': 1},
         {'bank': 'Monobank', 'date': '2022-11-25', 'currency': 'GPB', 'buy_value': 1.12, 'sell_value': 1.22},
     ]
+
     if request.method == 'GET':
-        return render_template('currency.html')
+        # в качестве параметра bank_from_form передается банк по умолчанию, верхний из списка, иначе идет из ветки
+        # else в currency.html, а это самый нижний, что мне не нравится визуально )
+        data_cur = [{'cur': 'UAH'}, {'cur': 'EUR'}, {'cur': 'USD'}, {'cur': 'GPB'}]
+        return render_template('currency.html', bank_from_form='NBU', data_cur=data_cur)
     else:
         bank_from_form = request.form['bank']
-        curr_base_from_form = request.form['currency_1']
+        curr_base_from_form = request.form.get('currency_1')
         curr_conv_from_form = request.form['currency_2']
         date_from_form = request.form['date']
         buy_base_curr = buy_conv_curr = sell_conv_curr = sell_base_curr = 0
-        for line in currency_bd_tmp:
-            if line['bank'] == bank_from_form and line['currency'] == curr_base_from_form \
-                    and line['date'] == date_from_form :
-                buy_base_curr = line['buy_value']
-                sell_base_curr = line['sell_value']
-            if line['bank'] == bank_from_form and line['currency'] == curr_conv_from_form \
-                    and line['date'] == date_from_form:
-                buy_conv_curr = line['buy_value']
-                sell_conv_curr = line['sell_value']
+        for key in currency_bd_tmp:
+            if key['bank'] == bank_from_form and key['currency'] == curr_base_from_form \
+                    and key['date'] == date_from_form:
+                buy_base_curr = key['buy_value']
+                sell_base_curr = key['sell_value']
+            if key['bank'] == bank_from_form and key['currency'] == curr_conv_from_form \
+                    and key['date'] == date_from_form:
+                buy_conv_curr = key['buy_value']
+                sell_conv_curr = key['sell_value']
         buy_exchange = buy_conv_curr / buy_base_curr
         sell_exchange = sell_conv_curr / sell_base_curr
-        rez = [buy_exchange, sell_exchange]
+
+        lst_base_cur = [{'cur': 'UAH'}, {'cur': 'EUR'}, {'cur': 'USD'}, {'cur': 'GPB'}]
+        lst_conv_cur = [{'cur': 'UAH'}, {'cur': 'EUR'}, {'cur': 'USD'}, {'cur': 'GPB'}]
+        i = 0
+        for element in lst_base_cur:
+            if element['cur'] == curr_base_from_form:
+                lst_base_cur.pop(i)
+            i = i + 1
+        y = 0
+        for element in lst_conv_cur:
+            if element['cur'] == curr_conv_from_form:
+                lst_conv_cur.pop(y)
+            y = y + 1
         return render_template('currency.html', bank_from_form=bank_from_form,
-                                                curr_base_from_form=curr_base_from_form,
-                                                buy_exchange=buy_exchange,
-                                                sell_exchange=sell_exchange,
-                                                curr_conv_from_form=curr_conv_from_form)
+                               curr_base_from_form=curr_base_from_form,
+                               buy_exchange=buy_exchange,
+                               sell_exchange=sell_exchange,
+                               curr_conv_from_form=curr_conv_from_form,
+                               date_from_form=date_from_form,
+                               lst_base_cur=lst_base_cur,
+                               lst_conv_cur=lst_conv_cur)
 
 
 if __name__ == '__main__':
