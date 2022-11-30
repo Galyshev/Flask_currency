@@ -1,9 +1,18 @@
 from flask import Flask, request, render_template
+from prj_sql import query_to_db
 
 app = Flask(__name__)
 
 
-# url = 'http://127.0.0.1:5000/'
+def fix(num, sign = 0):
+    '''
+    функия возвращает заданное количество чисел после запятой
+    :param num: число
+    :param sign: кол-во знаков после запятой, по умолчанию - 0
+    :return: отформатированное число
+    '''
+    return f"{num:.{sign}f}"
+
 
 # Стартовая страница, с приветствием, полезной информацией. Данные не вводятся. Есть переадресация на Login и Register
 @app.route("/", methods=['GET'])
@@ -44,30 +53,6 @@ def User_page():
 # страница с формой запроса для получения параметров.
 @app.route("/Currency", methods=['GET', 'POST'])
 def Currency():
-    '''
-    задача со звездочкой реализована, так, как мне хватило знаний и смекалки. Изменил принцип вывода банков,
-    так же поменял вывод кода валют, относительно того, что делали на уроке.
-    Возможно, я перепутал местами понятие "базовая валюта" и "конвертируемая валюта", однако это не влияет на
-    функционал, только на визуальную часть, которую не сложно изменить
-    '''
-
-    currency_bd_tmp = [
-        {'bank': 'NBU', 'date': '2022-11-25', 'currency': 'UAH', 'buy_value': 0.025, 'sell_value': 0.022},
-        {'bank': 'NBU', 'date': '2022-11-25', 'currency': 'EUR', 'buy_value': 0.9, 'sell_value': 0.9},
-        {'bank': 'NBU', 'date': '2022-11-25', 'currency': 'USD', 'buy_value': 1, 'sell_value': 1},
-        {'bank': 'NBU', 'date': '2022-11-25', 'currency': 'GPB', 'buy_value': 1.1, 'sell_value': 1.2},
-
-        {'bank': 'Privatbank', 'date': '2022-11-25', 'currency': 'UAH', 'buy_value': 0.026, 'sell_value': 0.023},
-        {'bank': 'Privatbank', 'date': '2022-11-25', 'currency': 'EUR', 'buy_value': 0.91, 'sell_value': 0.96},
-        {'bank': 'Privatbank', 'date': '2022-11-25', 'currency': 'USD', 'buy_value': 1, 'sell_value': 1},
-        {'bank': 'Privatbank', 'date': '2022-11-25', 'currency': 'GPB', 'buy_value': 1.11, 'sell_value': 1.21},
-
-        {'bank': 'Monobank', 'date': '2022-11-25', 'currency': 'UAH', 'buy_value': 0.027, 'sell_value': 0.024},
-        {'bank': 'Monobank', 'date': '2022-11-25', 'currency': 'EUR', 'buy_value': 0.92, 'sell_value': 0.97},
-        {'bank': 'Monobank', 'date': '2022-11-25', 'currency': 'USD', 'buy_value': 1, 'sell_value': 1},
-        {'bank': 'Monobank', 'date': '2022-11-25', 'currency': 'GPB', 'buy_value': 1.12, 'sell_value': 1.22},
-    ]
-
     if request.method == 'GET':
         # в качестве параметра bank_from_form передается банк по умолчанию, верхний из списка, иначе идет из ветки
         # else в currency.html, а это самый нижний, что мне не нравится визуально )
@@ -78,30 +63,39 @@ def Currency():
         curr_base_from_form = request.form.get('currency_1')
         curr_conv_from_form = request.form['currency_2']
         date_from_form = request.form['date']
-        buy_base_curr = buy_conv_curr = sell_conv_curr = sell_base_curr = 0
-        for key in currency_bd_tmp:
-            if key['bank'] == bank_from_form and key['currency'] == curr_base_from_form \
-                    and key['date'] == date_from_form:
-                buy_base_curr = key['buy_value']
-                sell_base_curr = key['sell_value']
-            if key['bank'] == bank_from_form and key['currency'] == curr_conv_from_form \
-                    and key['date'] == date_from_form:
-                buy_conv_curr = key['buy_value']
-                sell_conv_curr = key['sell_value']
+
+        # запрос в БД по ключам "банк", "дата", "код валюты". Возвращает список [buy_value, sell_value]
+        query_list_base_curr = query_to_db(bank_from_form, date_from_form, curr_base_from_form)
+        # тот же запрос  для второй валлюты
+        query_list_conv_curr = query_to_db(bank_from_form, date_from_form, curr_conv_from_form)
+
+        buy_base_curr = query_list_base_curr[0]
+        sell_base_curr = query_list_base_curr[1]
+
+        buy_conv_curr = query_list_conv_curr[0]
+        sell_conv_curr = query_list_conv_curr[1]
+
         buy_exchange = buy_conv_curr / buy_base_curr
         sell_exchange = sell_conv_curr / sell_base_curr
+        # функия возвращает заданное количество чисел после запятой
+        buy_exchange = fix(buy_exchange, 2)
+        sell_exchange = fix(sell_exchange, 2)
 
         lst_base_cur = [{'cur': 'UAH'}, {'cur': 'EUR'}, {'cur': 'USD'}, {'cur': 'GPB'}]
         lst_conv_cur = [{'cur': 'UAH'}, {'cur': 'EUR'}, {'cur': 'USD'}, {'cur': 'GPB'}]
+
+        # код ниже удаляет код валюты, заданные в форме запроса из общего списка, что бы не дублировался
         i = 0
         for element in lst_base_cur:
             if element['cur'] == curr_base_from_form:
                 lst_base_cur.pop(i)
+                break
             i = i + 1
         y = 0
         for element in lst_conv_cur:
             if element['cur'] == curr_conv_from_form:
                 lst_conv_cur.pop(y)
+                break
             y = y + 1
         return render_template('currency.html', bank_from_form=bank_from_form,
                                curr_base_from_form=curr_base_from_form,
