@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-from prj_sql import query_to_db
+import BDManager
 
 app = Flask(__name__)
 
@@ -65,18 +65,17 @@ def Currency():
         date_from_form = request.form['date']
 
         # запрос в БД по ключам "банк", "дата", "код валюты". Возвращает список [buy_value, sell_value]
-        query_list_base_curr = query_to_db(bank_from_form, date_from_form, curr_base_from_form)
-        # тот же запрос  для второй валлюты
-        query_list_conv_curr = query_to_db(bank_from_form, date_from_form, curr_conv_from_form)
-
+        query_list_base_curr = BDManager.query_to_db(bank_from_form, date_from_form, curr_base_from_form)
         buy_base_curr = query_list_base_curr[0]
         sell_base_curr = query_list_base_curr[1]
-
+        # тот же запрос  для второй валлюты
+        query_list_conv_curr = BDManager.query_to_db(bank_from_form, date_from_form, curr_conv_from_form)
         buy_conv_curr = query_list_conv_curr[0]
         sell_conv_curr = query_list_conv_curr[1]
 
         buy_exchange = buy_conv_curr / buy_base_curr
         sell_exchange = sell_conv_curr / sell_base_curr
+
         # функия возвращает заданное количество чисел после запятой
         buy_exchange = fix(buy_exchange, 2)
         sell_exchange = fix(sell_exchange, 2)
@@ -84,7 +83,7 @@ def Currency():
         lst_base_cur = [{'cur': 'UAH'}, {'cur': 'EUR'}, {'cur': 'USD'}, {'cur': 'GPB'}]
         lst_conv_cur = [{'cur': 'UAH'}, {'cur': 'EUR'}, {'cur': 'USD'}, {'cur': 'GPB'}]
 
-        # код ниже удаляет код валюты, заданные в форме запроса из общего списка, что бы не дублировался
+        # код ниже удаляет кодировки валюты, заданные в форме запроса из общего списка, что бы не дублировались
         i = 0
         for element in lst_base_cur:
             if element['cur'] == curr_base_from_form:
