@@ -1,7 +1,12 @@
+import time
+
 from flask import Flask, request, render_template
 import BDManager
+from celery.result import AsyncResult
+from celery_work import add
 
-app = Flask(__name__)
+
+flask_app = Flask(__name__)
 
 
 def fix(num, sign = 0):
@@ -15,13 +20,13 @@ def fix(num, sign = 0):
 
 
 # Стартовая страница, с приветствием, полезной информацией. Данные не вводятся. Есть переадресация на Login и Register
-@app.route("/", methods=['GET'])
+@flask_app.route("/", methods=['GET'])
 def index():
     return 'вывод стартовой страницы'
 
 
 # страница с регистрацией, из нее переход на страницу Login или стартовую (отмена регистрации). Есть ввод данных
-@app.route("/Register", methods=['GET', 'POST'])
+@flask_app.route("/Register", methods=['GET', 'POST'])
 def Register():
     if request.method == 'GET':
         return 'вывод формы регистрации'
@@ -30,7 +35,7 @@ def Register():
 
 
 # страница с авторизацией, из нее переход на страницу User_page или стартовую (отмена входа). Есть ввод данных
-@app.route("/Login", methods=['GET', 'POST'])
+@flask_app.route("/Login", methods=['GET', 'POST'])
 def Login():
     if request.method == 'GET':
         return 'вывод формы входа в систему'
@@ -39,19 +44,27 @@ def Login():
 
 
 # выход из авторизации и возврат на стартовую страницу
-@app.route("/Logout", methods=['GET'])
+@flask_app.route("/Logout", methods=['GET'])
 def Logout():
-    return 'выход из авторизации и возврат на стартовую страницу'
+    task = add.delay(3, 4)
+    print(task.ready())
+    result = {
+        "task_id": task.id,
+        "task_status": task.status,
+        "task_result": task.result,
+        "task_ready": task.ready()
+    }
+    return f"result = {result}"
 
 
 # странциа пользователя. Переход на страницу Currency или Logout
-@app.route("/User_page", methods=['GET'])
+@flask_app.route("/User_page", methods=['GET'])
 def User_page():
     return 'вывод страницы авторизировавшегося пользователя, с разного рода статистикой  \ историей взаимодействия'
 
 
 # страница с формой запроса для получения параметров.
-@app.route("/Currency", methods=['GET', 'POST'])
+@flask_app.route("/Currency", methods=['GET', 'POST'])
 def Currency():
     if request.method == 'GET':
         # в качестве параметра bank_from_form передается банк по умолчанию, верхний из списка, иначе идет из ветки
@@ -107,4 +120,4 @@ def Currency():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    flask_app.run(debug=True, port=5000)
