@@ -1,5 +1,4 @@
 from celery import Celery
-from celery.schedules import crontab
 celery = Celery('celery_work', broker='amqp://guest@localhost:5672//')
 
 
