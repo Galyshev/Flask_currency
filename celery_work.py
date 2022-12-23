@@ -1,8 +1,15 @@
 from celery import Celery
-# celery = Celery('celery_work', broker='amqp://guest@localhost:5672//', backend='rpc://' )
-celery = Celery('celery_work', broker='amqp://', backend='rpc://')
+from celery.schedules import crontab
+celery = Celery('celery_work', broker='amqp://guest@localhost:5672//')
 
-@celery.task(ignore_result=False)
-def add(x, y):
-    return x + y
+
+# перед запуском воркера во втором терминале запустить "celery -A celery_work beat"
+@celery.on_after_configure.connect
+def setup_periodic_tasks(sender, **kwargs):
+    sender.add_periodic_task(15.0, print_word.s('periodic text'), name='name_work')
+
+@celery.task()
+def print_word(string):
+    print(string)
+    return f"Input word: {string}"
 

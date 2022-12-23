@@ -1,9 +1,7 @@
-import time
 
 from flask import Flask, request, render_template
 import BDManager
-from celery.result import AsyncResult
-from celery_work import add
+from celery_work import print_word
 
 
 flask_app = Flask(__name__)
@@ -46,15 +44,8 @@ def Login():
 # выход из авторизации и возврат на стартовую страницу
 @flask_app.route("/Logout", methods=['GET'])
 def Logout():
-    task = add.delay(3, 4)
-    print(task.ready())
-    result = {
-        "task_id": task.id,
-        "task_status": task.status,
-        "task_result": task.result,
-        "task_ready": task.ready()
-    }
-    return f"result = {result}"
+    task = print_word.delay('Hello')
+    return 'page logout'
 
 
 # странциа пользователя. Переход на страницу Currency или Logout
