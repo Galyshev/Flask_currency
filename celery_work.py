@@ -1,5 +1,9 @@
+import os
+
 from celery import Celery
-celery = Celery('celery_work', broker='amqp://guest@localhost:5672//')
+
+rabbit_host = os.environ.get('RABBIT_HOST', 'localhost')
+celery = Celery('celery_work', broker=f'pyamqp://guest@{rabbit_host}//')
 
 
 # перед запуском воркера во втором терминале запустить "celery -A celery_work beat -s ./utils/celerybeat-schedule.db"
