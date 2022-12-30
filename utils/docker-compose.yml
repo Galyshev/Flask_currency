@@ -1,7 +1,8 @@
+# TODO при создании контейнера файл выложить в корневой каталог
 version: "3.9"
 services:
   web:
-    build: .
+    build: ..
     ports:
       - "8000:5000"
     depends_on:
@@ -18,7 +19,7 @@ services:
     hostname: rabbit_container
 
   celery_beat_container:
-    build: .
+    build: ..
     command: celery -A celery_work beat -s ./utils/celerybeat-schedule.db
     depends_on:
       - rabbit_container
@@ -26,7 +27,7 @@ services:
       - RABBIT_HOST=rabbit_container
 
   celery_worker_container:
-    build: .
+    build: ..
     command: celery -A celery_work worker --loglevel=INFO --pool=solo
     depends_on:
       - rabbit_container

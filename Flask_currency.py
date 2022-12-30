@@ -1,10 +1,13 @@
-
 from flask import Flask, request, render_template
+from sqlalchemy.sql import select
 import BDManager
 from celery_work import print_word
+from BD import Model_db
+from BD.alchemy import engine, db_session
 
 
 flask_app = Flask(__name__)
+
 
 
 def fix(num, sign = 0):
@@ -22,6 +25,41 @@ def fix(num, sign = 0):
 def index():
     return 'вывод стартовой страницы'
 
+# вариант 1 - через sqlalchemy.sql / select
+@flask_app.route("/Alchemy_var1", methods=['GET'])
+def Alchemy_var1():
+    conn = engine.connect()
+    currency = Model_db.Currency
+    query = select(currency)
+    # контроль запроса к БД
+    # print(query)
+    output_data = conn.execute(query)
+    rows = output_data.fetchall()
+    rez = []
+    for row in rows:
+        bank = row.bank
+        date = row.date
+        currency = row.currency
+        buy_value = row.buy_value
+        sell_value = row.sell_value
+        dic = {"bank": bank, "date": date, "currency": currency, "buy_value": buy_value, "sell_value": sell_value}
+        rez.append(dic)
+    return rez
+
+# вариант 2 - через db_session.query
+@flask_app.route("/Alchemy_var2", methods=['GET'])
+def Alchemy_var2():
+    query = db_session.query(Model_db.Currency)
+    rez = []
+    for instance in query:
+        bank = instance.bank
+        date = instance.date
+        currency = instance.currency
+        buy_value = instance.buy_value
+        sell_value = instance.sell_value
+        dic = {"bank": bank, "date": date, "currency": currency, "buy_value": buy_value, "sell_value": sell_value}
+        rez.append(dic)
+    return rez
 
 # страница с регистрацией, из нее переход на страницу Login или стартовую (отмена регистрации). Есть ввод данных
 @flask_app.route("/Register", methods=['GET', 'POST'])
